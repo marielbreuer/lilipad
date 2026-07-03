@@ -899,4 +899,27 @@ function memBuild(){
 }
 function memFlip(i){
   if(mLock) return;
-  const cards=document.querySelectorAll('.mem-card')
+  const cards=document.querySelectorAll('.mem-card');
+  const el2=cards[i];
+  if(el2.classList.contains('flipped')||el2.classList.contains('matched')) return;
+  el2.classList.add('flipped'); mFlipped.push(i);
+  if(mFlipped.length===2){
+    mLock=true; mAtt++;
+    document.getElementById('mem-att').textContent=mAtt;
+    const [a,b]=mFlipped;
+    if(mDeck[a].id===mDeck[b].id && mDeck[a].tp!==mDeck[b].tp){
+      cards[a].classList.add('matched'); cards[b].classList.add('matched');
+      mMatched.add(mDeck[a].id);
+      document.getElementById('mem-match').textContent=mMatched.size;
+      mFlipped=[]; mLock=false;
+      if(mMatched.size===6) document.getElementById('mem-fb').textContent=`🎉 All 6 pairs matched in ${mAtt} attempts!`;
+    } else {
+      setTimeout(()=>{ cards[a].classList.remove('flipped'); cards[b].classList.remove('flipped'); mFlipped=[]; mLock=false; }, 1000);
+    }
+  }
+}
+function memReset(){ memBuild(); }
+memBuild();
+</script>
+</body>
+</html>
