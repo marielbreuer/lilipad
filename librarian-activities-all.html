@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Community Librarian — 10 Interactive Activities</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;900&family=Figtree:wght@300;400;600;700&family=Mynerve&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #35805B; --green-dk: #1B4F3A;
+      --red: #c94b4b; --blue: #7b88d4; --blue-dk: #6272c0;
+      --amber: #FFC60C; --mint: #B4F4A6; --lavender: #E3BDE4; --periwinkle: #D6DFF7;
+      --bg: #F0ECE6; --card: #ffffff;
+      --border: #ddd6cc; --text: #141413; --muted: #5a5248;
+      --r: 14px;
+    }
+    body { font-family: 'Figtree', 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Header */
+    .site-header { background: #1B4F3A; color: white; padding: 22px 24px 18px; text-align: center; }
+    .site-header h1 { font-family: 'Unbounded', sans-serif; font-size: 1.1rem; font-weight: 900; letter-spacing: -0.01em; }
+    .site-header h1 .accent { font-family: 'Mynerve', cursive; font-size: 1.35rem; font-weight: 400; color: #B4F4A6; }
+    .site-header p { font-size: 0.82rem; opacity: 0.65; margin-top: 5px; font-family: 'Figtree', sans-serif; }
+
+    /* Tabs */
+    .tab-nav { background: #141413; display: flex; overflow-x: auto; gap: 2px; padding: 0 8px; scrollbar-width: thin; }
+    .tab-btn { background: transparent; border: none; color: rgba(255,255,255,0.55); padding: 11px 15px; font-size: 0.75rem; font-family: 'Figtree', sans-serif; font-weight: 600; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; transition: color 0.2s; letter-spacing: 0.01em; }
+    .tab-btn:hover { color: white; }
+    .tab-btn.active { color: #B4F4A6; border-bottom-color: #B4F4A6; }
+
+    /* Content */
+    .content { max-width: 920px; margin: 0 auto; padding: 26px 16px; }
+    .activity-section { display: none; }
+    .activity-section.active { display: block; }
+    .act-title { font-family: 'Unbounded', sans-serif; font-size: 1.05rem; font-weight: 900; color: #1B4F3A; margin-bottom: 5px; letter-spacing: -0.01em; }
+    .act-sub { font-size: 0.88rem; color: var(--muted); margin-bottom: 20px; }
+
+    /* Shared */
+    .btn { padding: 9px 22px; border: none; border-radius: 99px; font-size: 0.85rem; font-weight: 700; font-family: 'Figtree', sans-serif; cursor: pointer; transition: background 0.2s, transform 0.1s; letter-spacing: 0.01em; }
+    .btn:active { transform: scale(0.97); }
+    .btn-g { background: var(--green); color: #fff; } .btn-g:hover { background: var(--green-dk); }
+    .btn-b { background: #1B4F3A; color: #B4F4A6; } .btn-b:hover { background: #163d2e; }
+    .btn-m { background: #e4ded7; color: var(--text); } .btn-m:hover { background: #d5cfc8; }
+    .actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+    .feedback { margin-top: 12px; font-size: 0.92rem; font-weight: 600; min-height: 22px; }
+
+    /* ── ACTIVITY 1: DRAG & DROP ── */
+    .dd-layout { display: grid; grid-template-columns: 1fr 196px 1fr; gap: 12px; align-items: start; }
+    .dd-zone { background: var(--card); border-radius: var(--r); padding: 13px; min-height: 290px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .dd-zone.is { border-top: 4px solid var(--green); }
+    .dd-zone.is-not { border-top: 4px solid var(--red); }
+    .dd-zone h3 { font-size: 0.9rem; text-align: center; padding-bottom: 9px; border-bottom: 1px solid #eee; margin-bottom: 10px; }
+    .dd-zone.is h3 { color: #2e7d52; } .dd-zone.is-not h3 { color: #b71c1c; }
+    .dd-zone.drag-over { background: #eef6ff; outline: 2px dashed #aaa; }
+    .dd-bank { display: flex; flex-direction: column; gap: 7px; }
+    .dd-bank-lbl { text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+    .dd-card { background: #fff; border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 11px; font-size: 0.83rem; cursor: grab; user-select: none; transition: transform .15s, box-shadow .15s; line-height: 1.45; }
+    .dd-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(27,79,58,.12); }
+    .dd-card.dragging { opacity: .4; }
+    .dd-zone .dd-card { background: #f7fdf9; margin-bottom: 6px; border-color: #a8d5bc; }
+    .dd-zone.is-not .dd-card { background: #fdf7f7; border-color: #f0bebe; }
+    .dd-card.c-ok { background: #edf9f0; border-color: var(--green); }
+    .dd-card.c-err { background: #fdeaea; border-color: #c94b4b; }
+
+    /* ── ACTIVITY 2: SCENARIOS ── */
+    .sc-box { background: var(--card); border-radius: var(--r); padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .sc-nav { display: flex; gap: 8px; margin-bottom: 14px; align-items: center; }
+    .sc-dot { width: 10px; height: 10px; border-radius: 50%; background: #ddd; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+    .sc-dot.active { background: var(--blue); } .sc-dot.done { background: var(--green); }
+    .sc-counter { font-size: 0.78rem; color: var(--muted); margin-bottom: 7px; }
+    .sc-text { font-size: 0.95rem; line-height: 1.65; padding: 13px 15px; background: #edf3fe; border-left: 4px solid var(--periwinkle); border-radius: 6px; margin-bottom: 14px; }
+    .sc-choices { display: flex; flex-direction: column; gap: 9px; }
+    .sc-choice { background: #fff; border: 2px solid var(--border); border-radius: 10px; padding: 11px 14px; font-size: 0.88rem; text-align: left; cursor: pointer; transition: border-color .2s, background .2s; line-height: 1.5; }
+    .sc-choice:hover:not(:disabled) { border-color: var(--blue); background: #f0f6ff; }
+    .sc-choice.chosen-ok { border-color: var(--green); background: #e8f5e9; }
+    .sc-choice.chosen-err { border-color: var(--red); background: #ffebee; }
+    .sc-choice:disabled { cursor: default; }
+    .sc-feedback { margin-top: 13px; padding: 11px 14px; border-radius: 8px; font-size: 0.88rem; line-height: 1.55; display: none; }
+    .sc-feedback.show { display: block; }
+    .sc-feedback.good { background: #e8f5e9; border-left: 4px solid var(--green); }
+    .sc-feedback.bad { background: #ffebee; border-left: 4px solid var(--red); }
+
+    /* ── ACTIVITY 3: FLIP CARDS ── */
+    .flip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .flip-wrap { perspective: 1000px; height: 148px; cursor: pointer; }
+    .flip-inner { position: relative; width: 100%; height: 100%; transition: transform .5s; transform-style: preserve-3d; }
+    .flip-wrap.flipped .flip-inner { transform: rotateY(180deg); }
+    .flip-f, .flip-b { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 11px; display: flex; align-items: center; justify-content: center; padding: 13px; text-align: center; }
+    .flip-f { background: #1B4F3A; color: #B4F4A6; font-weight: 700; font-size: 0.88rem; font-family: 'Figtree', sans-serif; }
+    .flip-b { background: var(--card); border: 2px solid #B4F4A6; transform: rotateY(180deg); font-size: 0.8rem; line-height: 1.55; color: var(--text); }
+    .flip-hint { font-size: 0.78rem; color: var(--muted); text-align: center; margin-bottom: 13px; }
+
+    /* ── ACTIVITY 4: TRUE/FALSE ── */
+    .tf-q { background: var(--card); border-radius: var(--r); padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,.06); }
+    .tf-stmt { font-size: 0.92rem; line-height: 1.55; margin-bottom: 11px; }
+    .tf-row { display: flex; gap: 9px; }
+    .tf-btn { flex: 1; padding: 9px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all .2s; background: #fff; }
+    .tf-btn:hover:not(:disabled) { background: #f0f0f0; }
+    .tf-btn.t-btn:hover:not(:disabled) { border-color: var(--green); }
+    .tf-btn.f-btn:hover:not(:disabled) { border-color: var(--red); }
+    .tf-btn.c-ok { background: #e8f5e9; border-color: var(--green); color: #2e7d52; }
+    .tf-btn.c-err { background: #ffebee; border-color: var(--red); color: #b71c1c; }
+    .tf-btn:disabled { cursor: default; opacity: .85; }
+    .tf-exp { margin-top: 9px; font-size: 0.83rem; color: #555; padding: 8px 11px; background: #f9f5f0; border-radius: 6px; display: none; line-height: 1.55; }
+    .tf-exp.show { display: block; }
+
+    /* ── ACTIVITY 5: HOTSPOT ── */
+    .hs-svg { width: 100%; border-radius: var(--r); box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    .hs-info { margin-top: 14px; padding: 15px; background: var(--card); border-radius: var(--r); border-left: 4px solid var(--green); min-height: 78px; font-size: 0.88rem; line-height: 1.6; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    .hs-info-title { font-weight: 700; color: var(--green-dk); margin-bottom: 4px; font-size: 0.97rem; font-family: 'Figtree', sans-serif; }
+    .hs-btn { cursor: pointer; }
+    .hs-btn:hover { opacity: .85; }
+
+    /* ── ACTIVITY 6: JOURNAL ── */
+    .j-prompt { padding: 14px 16px; background: #fffbe6; border-left: 4px solid var(--amber); border-radius: 8px; font-size: 0.92rem; line-height: 1.65; margin-bottom: 14px; }
+    .j-lbl { font-size: 0.74rem; font-weight: 700; color: #9a7700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+    .j-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 14px; }
+    .j-q { background: var(--card); border-radius: 8px; padding: 11px; font-size: 0.82rem; line-height: 1.5; border: 1.5px solid var(--border); }
+    .j-q::before { content: '→ '; color: var(--amber); font-weight: 700; }
+    .j-ta { width: 100%; min-height: 190px; border: 2px solid var(--border); border-radius: 9px; padding: 13px; font-size: 0.88rem; font-family: inherit; line-height: 1.6; resize: vertical; transition: border-color .2s; background: #fff; }
+    .j-ta:focus { outline: none; border-color: var(--amber); }
+    .j-wc { font-size: 0.78rem; color: var(--muted); margin-top: 5px; text-align: right; }
+
+    /* ── ACTIVITY 7: CHECKLIST ── */
+    .cl-list { list-style: none; display: flex; flex-direction: column; gap: 9px; margin-top: 14px; }
+    .cl-item { display: flex; align-items: flex-start; gap: 11px; padding: 13px 14px; background: var(--card); border-radius: 10px; box-shadow: 0 1px 5px rgba(0,0,0,.06); cursor: pointer; user-select: none; border: 2px solid transparent; transition: background .2s; }
+    .cl-item.checked { background: #f0faf4; border-color: #c8e6c9; }
+    .cl-box { width: 21px; height: 21px; flex-shrink: 0; border-radius: 5px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all .2s; background: #fff; }
+    .cl-item.checked .cl-box { background: var(--green); border-color: var(--green); color: white; }
+    .cl-txt { font-size: 0.88rem; line-height: 1.5; }
+    .cl-item.checked .cl-txt { color: #666; }
+    .pb-wrap { background: #e0e0e0; border-radius: 99px; height: 11px; }
+    .pb-fill { height: 100%; background: var(--green); border-radius: 99px; transition: width .4s; }
+    .pb-lbl { font-size: 0.83rem; color: var(--muted); text-align: center; margin-top: 6px; }
+
+    /* ── ACTIVITY 8: SEQUENCE ── */
+    .seq-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+    .seq-item { display: flex; align-items: center; gap: 9px; padding: 11px 13px; background: var(--card); border-radius: 10px; border: 2px solid var(--border); cursor: grab; user-select: none; font-size: 0.88rem; line-height: 1.4; transition: box-shadow .2s; }
+    .seq-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+    .seq-item.dragging { opacity: .45; }
+    .seq-item.over-top { border-top: 3px solid var(--blue); }
+    .seq-item.over-bot { border-bottom: 3px solid var(--blue); }
+    .seq-handle { color: #bbb; font-size: 1rem; flex-shrink: 0; }
+    .seq-num { width: 26px; height: 26px; flex-shrink: 0; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; }
+    .seq-item.s-ok .seq-num { background: var(--green); color: white; }
+    .seq-item.s-err .seq-num { background: var(--red); color: white; }
+
+    /* ── ACTIVITY 9: SLIDERS ── */
+    .sl-list { display: flex; flex-direction: column; gap: 18px; }
+    .sl-lbl { font-size: 0.88rem; font-weight: 600; margin-bottom: 7px; }
+    .sl-track { display: flex; align-items: center; gap: 9px; }
+    .sl-range { flex: 1; -webkit-appearance: none; appearance: none; height: 5px; border-radius: 99px; background: #ddd; outline: none; cursor: pointer; }
+    .sl-range::-webkit-slider-thumb { -webkit-appearance: none; width: 19px; height: 19px; border-radius: 50%; background: var(--green); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+    .sl-val { width: 28px; text-align: center; font-weight: 700; font-size: 1rem; color: var(--green); }
+    .sl-lbls { display: flex; justify-content: space-between; font-size: 0.73rem; color: var(--muted); margin-top: 3px; }
+    .sl-result { margin-top: 18px; display: none; }
+    .sl-result.show { display: block; }
+    .sl-r-title { font-weight: 700; margin-bottom: 3px; }
+    .sl-r-sub { font-size: 0.83rem; color: var(--muted); margin-bottom: 11px; }
+    .sl-r-rows { display: flex; flex-direction: column; gap: 9px; }
+    .sl-r-row { display: flex; align-items: center; gap: 9px; font-size: 0.83rem; }
+    .sl-r-lbl { width: 230px; flex-shrink: 0; }
+    .sl-r-bw { flex: 1; background: #e0e0e0; border-radius: 99px; height: 9px; }
+    .sl-r-bf { height: 100%; background: var(--green); border-radius: 99px; transition: width .5s; }
+    .sl-r-n { width: 18px; font-weight: 700; color: var(--green); }
+
+    /* ── ACTIVITY 10: MEMORY ── */
+    .mem-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+    .mem-card { height: 88px; perspective: 600px; cursor: pointer; }
+    .mem-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .4s; }
+    .mem-card.flipped .mem-inner, .mem-card.matched .mem-inner { transform: rotateY(180deg); }
+    .mem-f, .mem-b { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 9px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 7px; }
+    .mem-f { background: #1B4F3A; color: #B4F4A6; font-size: 1.4rem; }
+    .mem-b { background: var(--card); border: 2px solid var(--border); transform: rotateY(180deg); font-size: 0.75rem; line-height: 1.4; }
+    .mem-card.matched .mem-b { border-color: var(--green); background: #e8f5e9; }
+    .mem-stats { display: flex; gap: 16px; margin-bottom: 13px; }
+    .mem-stat { background: var(--card); padding: 7px 13px; border-radius: 8px; font-size: 0.88rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .mem-stat span { font-weight: 700; color: var(--blue); }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .dd-layout { grid-template-columns: 1fr; }
+      .flip-grid { grid-template-columns: 1fr 1fr; }
+      .mem-grid { grid-template-columns: repeat(3,1fr); }
+      .j-grid { grid-template-columns: 1fr; }
+      .sl-r-lbl { width: 160px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="site-header">
+  <h1>Community Librarian <span class="accent">Programme</span></h1>
+  <p>10 Interactive Learning Activities</p>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn active"  onclick="showTab(0)">1. Sort It</button>
+  <button class="tab-btn" onclick="showTab(1)">2. Scenarios</button>
+  <button class="tab-btn" onclick="showTab(2)">3. Flip Cards</button>
+  <button class="tab-btn" onclick="showTab(3)">4. True / False</button>
+  <button class="tab-btn" onclick="showTab(4)">5. Hotspot</button>
+  <button class="tab-btn" onclick="showTab(5)">6. Reflection</button>
+  <button class="tab-btn" onclick="showTab(6)">7. Checklist</button>
+  <button class="tab-btn" onclick="showTab(7)">8. Sequence</button>
+  <button class="tab-btn" onclick="showTab(8)">9. Self-Check</button>
+  <button class="tab-btn" onclick="showTab(9)">10. Memory</button>
+</nav>
+
+<div class="content">
+
+<!-- 1. DRAG & DROP ─────────────────────────── -->
+<section class="activity-section active" id="act-0">
+  <div class="act-title">1. Sort It Out</div>
+  <div class="act-sub">Drag each phrase to the correct column — what a community librarian IS and IS NOT.</div>
+  <div class="dd-layout">
+    <div class="dd-zone is" id="ddz-is" ondragover="ddOver(event)" ondrop="ddDrop(event,'is')" ondragleave="ddLeave(event)">
+      <h3>✅ A Community Librarian IS…</h3>
+    </div>
+    <div>
+      <div class="dd-bank-lbl">Phrases</div>
+      <div class="dd-bank" id="dd-bank"></div>
+    </div>
+    <div class="dd-zone is-not" id="ddz-is-not" ondragover="ddOver(event)" ondrop="ddDrop(event,'is-not')" ondragleave="ddLeave(event)">
+      <h3>❌ A Community Librarian IS NOT…</h3>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn-g" onclick="ddCheck()">Check Answers</button>
+    <button class="btn btn-m" onclick="ddReset()">Reset</button>
+  </div>
+  <div class="feedback" id="dd-fb"></div>
+</section>
+
+<!-- 2. BRANCHING SCENARIOS ───────────────── -->
+<section class="activity-section" id="act-1">
+  <div class="act-title">2. What Would You Do?</div>
+  <div class="act-sub">Read each situation and choose the best response for a community librarian.</div>
+  <div class="sc-box">
+    <div class="sc-nav" id="sc-nav"></div>
+    <div class="sc-counter" id="sc-ctr"></div>
+    <div class="sc-text" id="sc-txt"></div>
+    <div class="sc-choices" id="sc-choices"></div>
+    <div class="sc-feedback" id="sc-fb"></div>
+    <div class="actions" id="sc-actions"></div>
+  </div>
+</section>
+
+<!-- 3. FLIP CARDS ─────────────────────────── -->
+<section class="activity-section" id="act-2">
+  <div class="act-title">3. Key Concepts</div>
+  <div class="act-sub">Click any card to flip it and reveal its meaning.</div>
+  <p class="flip-hint">🖱️ Click to flip — click again to flip back</p>
+  <div class="flip-grid" id="flip-grid"></div>
+</section>
+
+<!-- 4. TRUE / FALSE ──────────────────────── -->
+<section class="activity-section" id="act-3">
+  <div class="act-title">4. True or False?</div>
+  <div class="act-sub">Read each statement and decide. You'll see an explanation either way.</div>
+  <div id="tf-container"></div>
+  <div class="actions"><button class="btn btn-m" onclick="tfReset()">Reset All</button></div>
+  <div class="feedback" id="tf-score"></div>
+</section>
+
+<!-- 5. HOTSPOT ────────────────────────────── -->
+<section class="activity-section" id="act-4">
+  <div class="act-title">5. Explore the Library</div>
+  <div class="act-sub">Click any highlighted zone to learn about the community librarian's role there.</div>
+  <svg class="hs-svg" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background & walls -->
+    <rect width="800" height="400" fill="#f0e0c8" rx="10"/>
+    <rect x="0" y="0" width="800" height="38" fill="#7a5c3a"/>
+    <rect x="0" y="38" width="800" height="295" fill="#f8ede0"/>
+    <rect x="0" y="333" width="800" height="67" fill="#c8a882"/>
+    <line x1="0" y1="333" x2="800" y2="333" stroke="#aa8860" stroke-width="2"/>
+    <!-- Window -->
+    <rect x="340" y="55" width="120" height="100" rx="4" fill="#b3d4f5" stroke="#7a5c3a" stroke-width="3"/>
+    <line x1="400" y1="55" x2="400" y2="155" stroke="#7a5c3a" stroke-width="2"/>
+    <line x1="340" y1="105" x2="460" y2="105" stroke="#7a5c3a" stroke-width="2"/>
+    <rect x="345" y="59" width="50" height="44" fill="#c8e8ff" opacity=".6"/>
+    <rect x="399" y="59" width="56" height="44" fill="#c8e8ff" opacity=".4"/>
+
+    <!-- ZONE 1: Information Desk -->
+    <g class="hs-btn" onclick="showHS(0)" tabindex="0" role="button" aria-label="Information Desk">
+      <rect x="42" y="230" width="148" height="80" rx="5" fill="#8b6040"/>
+      <rect x="42" y="210" width="148" height="28" rx="4" fill="#a07050"/>
+      <text x="116" y="269" text-anchor="middle" fill="white" font-size="11" font-weight="bold">INFORMATION</text>
+      <text x="116" y="284" text-anchor="middle" fill="white" font-size="11" font-weight="bold">DESK</text>
+      <!-- person silhouette -->
+      <circle cx="116" cy="200" r="12" fill="#c8a070"/>
+      <rect x="108" y="212" width="16" height="20" rx="3" fill="#c8a070"/>
+      <!-- pulse ring -->
+      <circle cx="116" cy="200" r="20" fill="none" stroke="#f0a500" stroke-width="2" opacity=".7"/>
+      <circle cx="116" cy="200" r="10" fill="#f0a500" opacity=".9"/>
+      <text x="116" y="205" text-anchor="middle" fill="white" font-size="12" font-weight="bold">?</text>
+    </g>
+
+    <!-- ZONE 2: Bookshelf / Collection -->
+    <g class="hs-btn" onclick="showHS(1)" tabindex="0" role="button" aria-label="Library Collection">
+      <!-- Frame -->
+      <rect x="220" y="60" width="110" height="265" rx="3" fill="#6b4020"/>
+      <rect x="225" y="65" width="100" height="255" fill="#c8a470"/>
+      <!-- Shelves -->
+      <rect x="220" y="60"  width="110" height="7" fill="#5a3010"/>
+      <rect x="220" y="140" width="110" height="7" fill="#5a3010"/>
+      <rect x="220" y="220" width="110" height="7" fill="#5a3010"/>
+      <!-- Row 1 -->
+      <rect x="228" y="70"  width="11" height="65" rx="1" fill="#e53935"/>
+      <rect x="241" y="74"  width="9"  height="61" rx="1" fill="#1e88e5"/>
+      <rect x="252" y="68"  width="12" height="67" rx="1" fill="#43a047"/>
+      <rect x="266" y="72"  width="10" height="63" rx="1" fill="#fb8c00"/>
+      <rect x="278" y="70"  width="11" height="65" rx="1" fill="#8e24aa"/>
+      <rect x="291" y="75"  width="9"  height="60" rx="1" fill="#00897b"/>
+      <rect x="302" y="70"  width="10" height="65" rx="1" fill="#c0392b"/>
+      <!-- Row 2 -->
+      <rect x="228" y="150" width="10" height="65" rx="1" fill="#e67e22"/>
+      <rect x="240" y="154" width="12" height="61" rx="1" fill="#2980b9"/>
+      <rect x="254" y="148" width="9"  height="67" rx="1" fill="#27ae60"/>
+      <rect x="265" y="152" width="11" height="63" rx="1" fill="#7b1fa2"/>
+      <rect x="278" y="150" width="10" height="65" rx="1" fill="#1565c0"/>
+      <rect x="290" y="154" width="12" height="61" rx="1" fill="#c62828"/>
+      <rect x="304" y="150" width="9"  height="65" rx="1" fill="#2e7d32"/>
+      <!-- Row 3 -->
+      <rect x="228" y="230" width="11" height="60" rx="1" fill="#f4511e"/>
+      <rect x="241" y="234" width="10" height="56" rx="1" fill="#283593"/>
+      <rect x="253" y="228" width="12" height="62" rx="1" fill="#00695c"/>
+      <rect x="267" y="232" width="9"  height="58" rx="1" fill="#ad1457"/>
+      <rect x="278" y="230" width="11" height="60" rx="1" fill="#4e342e"/>
+      <rect x="291" y="234" width="10" height="56" rx="1" fill="#558b2f"/>
+      <rect x="303" y="230" width="11" height="60" rx="1" fill="#00838f"/>
+      <text x="275" y="352" text-anchor="middle" fill="#5a3010" font-size="10" font-weight="bold">COLLECTION</text>
+      <circle cx="275" cy="53" r="13" fill="#4caf7d" opacity=".9"/>
+      <text x="275" y="58" text-anchor="middle" fill="white" font-size="13" font-weight="bold">?</text>
+    </g>
+
+    <!-- ZONE 3: Digital Station -->
+    <g class="hs-btn" onclick="showHS(2)" tabindex="0" role="button" aria-label="Digital Station">
+      <!-- Monitor -->
+      <rect x="490" y="110" width="95" height="70" rx="4" fill="#37474f"/>
+      <rect x="496" y="116" width="83" height="58" rx="2" fill="#4a90d9"/>
+      <rect x="500" y="121" width="65" height="3" rx="1" fill="white" opacity=".7"/>
+      <rect x="500" y="128" width="50" height="3" rx="1" fill="white" opacity=".5"/>
+      <rect x="500" y="135" width="58" height="3" rx="1" fill="white" opacity=".5"/>
+      <rect x="500" y="142" width="42" height="3" rx="1" fill="white" opacity=".35"/>
+      <rect x="500" y="149" width="55" height="3" rx="1" fill="white" opacity=".35"/>
+      <rect x="500" y="156" width="40" height="3" rx="1" fill="white" opacity=".25"/>
+      <!-- Stand -->
+      <rect x="533" y="180" width="9" height="22" rx="1" fill="#37474f"/>
+      <rect x="521" y="200" width="33" height="5" rx="2" fill="#37474f"/>
+      <!-- Keyboard -->
+      <rect x="507" y="208" width="60" height="13" rx="2" fill="#546e7a"/>
+      <rect x="510" y="211" width="5" height="4" rx="1" fill="#78909c"/>
+      <rect x="517" y="211" width="5" height="4" rx="1" fill="#78909c"/>
+      <rect x="524" y="211" width="5" height="4" rx="1" fill="#78909c"/>
+      <rect x="531" y="211" width="5" height="4" rx="1" fill="#78909c"/>
+      <rect x="538" y="211" width="5" height="4" rx="1" fill="#78909c"/>
+      <rect x="545" y="211" width="5" height="4" rx="1" fill="#78909c"/>
+      <rect x="552" y="211" width="10" height="4" rx="1" fill="#78909c"/>
+      <text x="538" y="350" text-anchor="middle" fill="#1a3a5a" font-size="10" font-weight="bold">DIGITAL STATION</text>
+      <circle cx="538" cy="104" r="13" fill="#4a90d9" opacity=".9"/>
+      <text x="538" y="109" text-anchor="middle" fill="white" font-size="13" font-weight="bold">?</text>
+    </g>
+
+    <!-- ZONE 4: Children's Corner -->
+    <g class="hs-btn" onclick="showHS(3)" tabindex="0" role="button" aria-label="Children's Corner">
+      <!-- Low shelves -->
+      <rect x="628" y="220" width="140" height="20" rx="3" fill="#6b4020"/>
+      <rect x="628" y="195" width="140" height="6" rx="2" fill="#5a3010"/>
+      <!-- Colourful books -->
+      <rect x="633" y="200" width="10" height="38" rx="1" fill="#e91e63"/>
+      <rect x="645" y="203" width="9"  height="35" rx="1" fill="#ff9800"/>
+      <rect x="656" y="200" width="11" height="38" rx="1" fill="#4caf50"/>
+      <rect x="669" y="203" width="9"  height="35" rx="1" fill="#2196f3"/>
+      <rect x="680" y="200" width="10" height="38" rx="1" fill="#9c27b0"/>
+      <rect x="692" y="203" width="9"  height="35" rx="1" fill="#ff5722"/>
+      <rect x="703" y="200" width="11" height="38" rx="1" fill="#00bcd4"/>
+      <rect x="716" y="203" width="10" height="35" rx="1" fill="#cddc39"/>
+      <rect x="728" y="200" width="9"  height="38" rx="1" fill="#f44336"/>
+      <rect x="739" y="203" width="10" height="35" rx="1" fill="#3f51b5"/>
+      <rect x="751" y="200" width="11" height="38" rx="1" fill="#009688"/>
+      <!-- Rug -->
+      <ellipse cx="698" cy="305" rx="55" ry="25" fill="#ff7043" opacity=".5"/>
+      <ellipse cx="698" cy="305" rx="40" ry="18" fill="#fff9c4" opacity=".6"/>
+      <!-- Stars -->
+      <text x="680" y="312" font-size="16">⭐</text>
+      <text x="700" y="308" font-size="12">✨</text>
+      <text x="718" y="315" font-size="14">🌟</text>
+      <text x="698" y="355" text-anchor="middle" fill="#bf360c" font-size="10" font-weight="bold">CHILDREN'S CORNER</text>
+      <circle cx="698" cy="188" r="13" fill="#ff7043" opacity=".9"/>
+      <text x="698" y="193" text-anchor="middle" fill="white" font-size="13" font-weight="bold">?</text>
+    </g>
+
+    <!-- ZONE 5: Notice Board -->
+    <g class="hs-btn" onclick="showHS(4)" tabindex="0" role="button" aria-label="Notice Board">
+      <rect x="490" y="58" width="130" height="170" rx="4" fill="#6d4c41"/>
+      <rect x="497" y="65" width="116" height="156" rx="2" fill="#f5deb3"/>
+      <!-- Notes -->
+      <rect x="502" y="72"  width="48" height="38" rx="2" fill="#fff9c4"/>
+      <rect x="556" y="72"  width="50" height="38" rx="2" fill="#c8e6c9"/>
+      <rect x="502" y="116" width="52" height="42" rx="2" fill="#ffccbc"/>
+      <rect x="560" y="116" width="46" height="42" rx="2" fill="#e1bee7"/>
+      <rect x="502" y="164" width="104" height="30" rx="2" fill="#b3e5fc"/>
+      <!-- Pins -->
+      <circle cx="526" cy="71" r="4" fill="#e53935"/>
+      <circle cx="581" cy="71" r="4" fill="#1e88e5"/>
+      <circle cx="528" cy="115" r="4" fill="#43a047"/>
+      <circle cx="583" cy="115" r="4" fill="#fb8c00"/>
+      <circle cx="554" cy="163" r="4" fill="#7b1fa2"/>
+      <!-- Text lines on notes -->
+      <rect x="505" y="80"  width="36" height="3" rx="1" fill="#ccc"/>
+      <rect x="505" y="86"  width="28" height="3" rx="1" fill="#ccc"/>
+      <rect x="559" y="80"  width="40" height="3" rx="1" fill="#ccc"/>
+      <rect x="559" y="86"  width="32" height="3" rx="1" fill="#ccc"/>
+      <rect x="505" y="124" width="40" height="3" rx="1" fill="#ccc"/>
+      <rect x="505" y="130" width="30" height="3" rx="1" fill="#ccc"/>
+      <rect x="563" y="124" width="35" height="3" rx="1" fill="#ccc"/>
+      <rect x="563" y="130" width="26" height="3" rx="1" fill="#ccc"/>
+      <rect x="505" y="172" width="92" height="3" rx="1" fill="#ccc"/>
+      <text x="555" y="350" text-anchor="middle" fill="#4e342e" font-size="10" font-weight="bold">NOTICE BOARD</text>
+      <circle cx="555" cy="51" r="13" fill="#ff7043" opacity=".9"/>
+      <text x="555" y="56" text-anchor="middle" fill="white" font-size="13" font-weight="bold">?</text>
+    </g>
+
+    <!-- ZONE 6: Reading Area -->
+    <g class="hs-btn" onclick="showHS(5)" tabindex="0" role="button" aria-label="Reading Area">
+      <!-- Armchair -->
+      <rect x="360" y="230" width="90" height="70" rx="10" fill="#4a90d9"/>
+      <rect x="360" y="210" width="90" height="30" rx="8" fill="#3a7fc8"/>
+      <rect x="355" y="218" width="18" height="60" rx="7" fill="#3a7fc8"/>
+      <rect x="432" y="218" width="18" height="60" rx="7" fill="#3a7fc8"/>
+      <!-- Legs -->
+      <rect x="365" y="298" width="10" height="15" rx="3" fill="#2c5f8a"/>
+      <rect x="430" y="298" width="10" height="15" rx="3" fill="#2c5f8a"/>
+      <!-- Side table -->
+      <rect x="450" y="270" width="30" height="5" rx="2" fill="#8b6040"/>
+      <rect x="460" y="275" width="8"  height="28" rx="2" fill="#6b4020"/>
+      <!-- Book on table -->
+      <rect x="448" y="262" width="32" height="10" rx="2" fill="#e53935"/>
+      <!-- Person hint -->
+      <circle cx="405" cy="218" r="11" fill="#c8a070"/>
+      <text x="405" y="340" text-anchor="middle" fill="#1a3a5a" font-size="10" font-weight="bold">READING AREA</text>
+      <circle cx="405" cy="202" r="13" fill="#4a90d9" opacity=".9"/>
+      <text x="405" y="207" text-anchor="middle" fill="white" font-size="13" font-weight="bold">?</text>
+    </g>
+  </svg>
+  <div class="hs-info" id="hs-info">
+    <span style="color:#aaa;font-size:.88rem;">👆 Click a zone to explore its role in the community library.</span>
+  </div>
+</section>
+
+<!-- 6. REFLECTION ────────────────────────── -->
+<section class="activity-section" id="act-5">
+  <div class="act-title">6. Reflection Journal</div>
+  <div class="act-sub">Take a moment to reflect. There are no right or wrong answers.</div>
+  <div class="j-prompt">
+    <div class="j-lbl">📝 Prompt</div>
+    Think about your own community. What do people struggle to access — information, services, support? How could a community library help bridge that gap? What would your role as a community librarian look like?
+  </div>
+  <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px;">Consider these guiding questions:</p>
+  <div class="j-grid">
+    <div class="j-q">Who in your community might be hardest to reach?</div>
+    <div class="j-q">What resources do you wish were more accessible?</div>
+    <div class="j-q">What skills do you already have that would help?</div>
+    <div class="j-q">What would a welcoming library space look like here?</div>
+  </div>
+  <textarea class="j-ta" id="j-ta" placeholder="Start writing here…" oninput="jCount()"></textarea>
+  <div class="j-wc" id="j-wc">0 words</div>
+  <div class="actions">
+    <button class="btn btn-g" onclick="jCopy()">Copy Text</button>
+    <button class="btn btn-m" onclick="jClear()">Clear</button>
+  </div>
+  <div class="feedback" id="j-fb"></div>
+</section>
+
+<!-- 7. CHECKLIST ─────────────────────────── -->
+<section class="activity-section" id="act-6">
+  <div class="act-title">7. Module Confidence Checklist</div>
+  <div class="act-sub">Tick each statement when you feel genuinely confident about it. Be honest!</div>
+  <div class="pb-wrap"><div class="pb-fill" id="pb-fill" style="width:0%"></div></div>
+  <div class="pb-lbl" id="pb-lbl">0 of 8 completed</div>
+  <ul class="cl-list" id="cl-list"></ul>
+  <div class="actions"><button class="btn btn-m" onclick="clReset()">Reset</button></div>
+</section>
+
+<!-- 8. SEQUENCING ────────────────────────── -->
+<section class="activity-section" id="act-7">
+  <div class="act-title">8. Put It in Order</div>
+  <div class="act-sub">Drag the steps into the correct order for planning a community library programme.</div>
+  <div class="seq-list" id="seq-list"></div>
+  <div class="actions">
+    <button class="btn btn-g" onclick="seqCheck()">Check Order</button>
+    <button class="btn btn-m" onclick="seqReset()">Shuffle Again</button>
+  </div>
+  <div class="feedback" id="seq-fb"></div>
+</section>
+
+<!-- 9. SELF-ASSESSMENT ───────────────────── -->
+<section class="activity-section" id="act-8">
+  <div class="act-title">9. How Confident Am I?</div>
+  <div class="act-sub">Rate your confidence in each skill — 1 (not yet) to 5 (very confident). No right or wrong!</div>
+  <div class="sl-list" id="sl-list"></div>
+  <div class="actions">
+    <button class="btn btn-g" onclick="slResult()">See My Profile</button>
+    <button class="btn btn-m" onclick="slReset()">Reset</button>
+  </div>
+  <div class="sl-result" id="sl-result">
+    <div class="sl-r-title">Your Confidence Profile</div>
+    <div class="sl-r-sub">Come back after each module to see how you've grown.</div>
+    <div class="sl-r-rows" id="sl-r-rows"></div>
+  </div>
+</section>
+
+<!-- 10. MEMORY MATCH ────────────────────── -->
+<section class="activity-section" id="act-9">
+  <div class="act-title">10. Memory Match</div>
+  <div class="act-sub">Click two cards to flip them. Match each term with its definition — find all 6 pairs!</div>
+  <div class="mem-stats">
+    <div class="mem-stat">Attempts: <span id="mem-att">0</span></div>
+    <div class="mem-stat">Matched: <span id="mem-match">0</span> / 6</div>
+  </div>
+  <div class="mem-grid" id="mem-grid"></div>
+  <div class="actions"><button class="btn btn-m" onclick="memReset()">New Game</button></div>
+  <div class="feedback" id="mem-fb"></div>
+</section>
+
+</div><!-- /content -->
+
+<script>
+// ── TAB NAV ──────────────────────────────────────────
+function showTab(n) {
+  document.querySelectorAll('.activity-section').forEach((s,i) => s.classList.toggle('active', i===n));
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===n));
+}
+
+// ── 1. DRAG & DROP ───────────────────────────────────
+const DD = [
+  {id:1, text:"A connector to community resources and services", a:"is"},
+  {id:2, text:"A guide to finding trustworthy information", a:"is"},
+  {id:3, text:"An advocate for free access to information", a:"is"},
+  {id:4, text:"A curator of diverse, inclusive collections", a:"is"},
+  {id:5, text:"A supporter of lifelong learning", a:"is"},
+  {id:6, text:"An organiser of programmes for all ages", a:"is"},
+  {id:7, text:"A safe, welcoming presence for everyone", a:"is"},
+  {id:8, text:"Just a person who shelves books", a:"is-not"},
+  {id:9, text:"Only a resource for students and academics", a:"is-not"},
+  {id:10, text:"A gatekeeper who controls what people can read", a:"is-not"},
+  {id:11, text:"Someone whose job is to enforce silence", a:"is-not"},
+  {id:12, text:"A service only for people who are already literate", a:"is-not"},
+];
+let ddDrag=null, ddPlace={};
+function ddBuild(){
+  const b=document.getElementById('dd-bank'); b.innerHTML='';
+  [...DD].sort(()=>Math.random()-.5).forEach(p=>{ if(!ddPlace[p.id]) b.appendChild(ddCard(p)); });
+}
+function ddCard(p){
+  const c=document.createElement('div'); c.className='dd-card'; c.id='ddc'+p.id;
+  c.draggable=true; c.dataset.id=p.id; c.textContent=p.text;
+  c.addEventListener('dragstart',()=>{ ddDrag=p.id; setTimeout(()=>c.classList.add('dragging'),0); });
+  c.addEventListener('dragend',()=>c.classList.remove('dragging'));
+  return c;
+}
+function ddOver(e){ e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function ddLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+function ddDrop(e,z){
+  e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+  if(!ddDrag) return;
+  const id=parseInt(ddDrag), c=document.getElementById('ddc'+id);
+  c.classList.remove('c-ok','c-err');
+  const ic=c.querySelector('.ci'); if(ic) ic.remove();
+  c.remove(); ddPlace[id]=z;
+  document.getElementById('ddz-'+z).appendChild(c);
+  document.getElementById('dd-fb').textContent=''; ddDrag=null;
+}
+function ddCheck(){
+  let ok=0, tot=Object.keys(ddPlace).length;
+  if(!tot){ document.getElementById('dd-fb').textContent='Drag some phrases first!'; return; }
+  Object.entries(ddPlace).forEach(([id,z])=>{
+    const p=DD.find(x=>x.id===parseInt(id)), c=document.getElementById('ddc'+id);
+    const oi=c.querySelector('.ci'); if(oi) oi.remove();
+    c.classList.remove('c-ok','c-err');
+    const sp=document.createElement('span'); sp.className='ci';
+    if(z===p.a){ c.classList.add('c-ok'); sp.textContent=' ✓'; ok++; }
+    else { c.classList.add('c-err'); sp.textContent=' ✗'; }
+    c.appendChild(sp);
+  });
+  const all=tot===DD.length;
+  document.getElementById('dd-fb').textContent = all&&ok===tot ? '🎉 Perfect — all correct!' : `${ok} / ${tot} correct${all?'':' — keep going!'}`;
+}
+function ddReset(){
+  ddPlace={}; ['is','is-not'].forEach(z=>document.getElementById('ddz-'+z).querySelectorAll('.dd-card').forEach(c=>c.remove()));
+  document.getElementById('dd-fb').textContent=''; ddBuild();
+}
+ddBuild();
+
+// ── 2. BRANCHING SCENARIOS ───────────────────────────
+const SC=[
+  { text:"A community member walks in visibly distressed. They've just been made redundant and don't know where to start — they need help with job searching but have never really used a computer.",
+    choices:[
+      {t:"Tell them the library has computers, but that staff can't assist with personal matters.", ok:false, fb:"This misses the community librarian's core role. The patron needs guidance — not just access to a machine."},
+      {t:"Sit with them, walk them through the job-search resources, and share leaflets for local employment support services.", ok:true, fb:"✅ Excellent! You acknowledged their situation, offered practical help, and connected them to community services — exactly what a community librarian does."},
+      {t:"Offer to do the full job search yourself so they don't have to worry.", ok:false, fb:"Kindly intended, but doing it for them doesn't build independence. A community librarian empowers — guiding and teaching, not taking over."},
+    ]},
+  { text:"Teenagers come in every day after school. They are sometimes noisy and use the computers for gaming. Other patrons have complained. What do you do?",
+    choices:[
+      {t:"Ban them from the library after 3 pm to keep the peace.", ok:false, fb:"Exclusion contradicts the community librarian's mission. Young people deserve safe spaces — and they may need the library most."},
+      {t:"Ignore the complaints entirely — teenagers have a right to be here too.", ok:false, fb:"Ignoring tension doesn't resolve it. An inclusive space requires active, respectful mediation — not avoidance."},
+      {t:"Talk to the teenagers, set shared expectations, and explore whether a youth programme could channel their energy positively.", ok:true, fb:"✅ You respected their right to be there, set community norms collaboratively, and spotted a programme opportunity. Well done!"},
+    ]},
+  { text:"A parent asks if you have books in Arabic for their child who is learning to read. Your current collection has none.",
+    choices:[
+      {t:"Apologise and say there's nothing you can do — the collection is what it is.", ok:false, fb:"Collections should reflect the community they serve. This is a missed chance to advocate for inclusion."},
+      {t:"Note the request, look into interlibrary loans, and flag it as a collection gap to the right person.", ok:true, fb:"✅ You listened, took action, and advocated for an inclusive collection — exactly the right response."},
+      {t:"Suggest they try an online bookshop instead.", ok:false, fb:"This dismisses their need. A community librarian advocates for equitable access — not outsources it to paid services."},
+    ]},
+  { text:"An elderly patron tells you they've been receiving suspicious phone calls and thinks they might be scams. They ask for your advice.",
+    choices:[
+      {t:"Explain that you're a librarian, not a fraud expert, and suggest they call the police.", ok:false, fb:"While boundaries matter, dismissing the concern misses the community librarian's role as an information guide and connector."},
+      {t:"Share what you know about recognising scams, provide consumer protection leaflets, and help them find the right contact number.", ok:true, fb:"✅ You offered information literacy support and connected them to specialist help — both core community librarian skills."},
+      {t:"Offer to check their phone yourself to review the calls.", ok:false, fb:"This goes beyond your role and raises privacy concerns. Information guidance and signposting are the right tools here."},
+    ]},
+];
+let scIdx=0, scAns=[];
+function scNav(){
+  const nav=document.getElementById('sc-nav'); nav.innerHTML='';
+  SC.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='sc-dot'+(i===scIdx?' active':'')+(scAns[i]!==undefined?' done':'');
+    d.onclick=()=>{ scIdx=i; scRender(); };
+    nav.appendChild(d);
+  });
+}
+function scRender(){
+  const s=SC[scIdx];
+  document.getElementById('sc-ctr').textContent=`Scenario ${scIdx+1} of ${SC.length}`;
+  document.getElementById('sc-txt').textContent=s.text;
+  const ce=document.getElementById('sc-choices'); ce.innerHTML='';
+  s.choices.forEach((c,i)=>{
+    const b=document.createElement('button'); b.className='sc-choice';
+    b.textContent=String.fromCharCode(65+i)+'. '+c.t;
+    if(scAns[scIdx]!==undefined){ b.disabled=true; if(i===scAns[scIdx]) b.classList.add(c.ok?'chosen-ok':'chosen-err'); }
+    b.onclick=()=>scChoose(i);
+    ce.appendChild(b);
+  });
+  const fb=document.getElementById('sc-fb');
+  if(scAns[scIdx]!==undefined){
+    const ch=s.choices[scAns[scIdx]];
+    fb.textContent=ch.fb; fb.className='sc-feedback show '+(ch.ok?'good':'bad');
+  } else { fb.className='sc-feedback'; }
+  const ac=document.getElementById('sc-actions'); ac.innerHTML='';
+  if(scAns[scIdx]!==undefined && scIdx<SC.length-1){
+    const nx=document.createElement('button'); nx.className='btn btn-b'; nx.textContent='Next Scenario →';
+    nx.onclick=()=>{ scIdx++; scRender(); scNav(); }; ac.appendChild(nx);
+  }
+  scNav();
+}
+function scChoose(i){ scAns[scIdx]=i; scRender(); }
+scRender();
+
+// ── 3. FLIP CARDS ────────────────────────────────────
+const FLIP=[
+  {t:"Community Outreach", d:"Actively engaging with community members beyond the library walls to ensure everyone can access services."},
+  {t:"Information Literacy", d:"The ability to find, evaluate, and use information effectively and responsibly."},
+  {t:"Inclusive Collection", d:"A library collection that reflects the languages, cultures, and needs of the diverse community it serves."},
+  {t:"Safe Space", d:"An environment where all community members feel welcomed, respected, and free from discrimination."},
+  {t:"Digital Divide", d:"The gap between those with ready access to technology and those who do not — a key equity issue for libraries."},
+  {t:"Lifelong Learning", d:"The continuous pursuit of knowledge for personal or professional development at any age."},
+  {t:"Community Asset", d:"A resource, skill, or facility that benefits and strengthens the local community."},
+  {t:"Reader's Advisory", d:"Helping community members discover books and resources that match their interests and needs."},
+  {t:"Signposting", d:"Connecting people to the right services or organisations beyond what the library can directly provide."},
+];
+(function buildFlip(){
+  const g=document.getElementById('flip-grid');
+  FLIP.forEach(c=>{
+    const w=document.createElement('div'); w.className='flip-wrap';
+    w.innerHTML=`<div class="flip-inner"><div class="flip-f">${c.t}</div><div class="flip-b">${c.d}</div></div>`;
+    w.onclick=()=>w.classList.toggle('flipped');
+    g.appendChild(w);
+  });
+})();
+
+// ── 4. TRUE / FALSE ──────────────────────────────────
+const TF=[
+  {s:"A community librarian's job is mainly about organising and shelving books.", a:false, e:"While collections matter, the core role is connecting people to information and resources, running programmes, and serving as a community hub."},
+  {s:"Community librarians should actively seek out people who have never used a library before.", a:true, e:"Outreach and inclusion are central. A community librarian reaches beyond regular users to engage those who might not think the library is for them."},
+  {s:"Libraries are only useful for people who know how to read.", a:false, e:"Libraries serve all community members — through audiobooks, visual resources, programmes, social support, digital access, and more."},
+  {s:"A community librarian can play a role in addressing social exclusion.", a:true, e:"By providing free access to information, services, and a welcoming space, community libraries directly tackle barriers linked to poverty, isolation, and inequality."},
+  {s:"The collection in a community library should reflect the languages spoken in its local community.", a:true, e:"An inclusive collection represents and serves the actual community — including multilingual resources for non-native speakers and heritage language readers."},
+  {s:"A community librarian should stay neutral and never advocate for patrons' needs.", a:false, e:"Advocacy is part of the role — flagging collection gaps, pushing for accessibility, and connecting patrons to their rights and services."},
+];
+let tfState={};
+function buildTF(){
+  const ct=document.getElementById('tf-container'); ct.innerHTML='';
+  TF.forEach((q,i)=>{
+    const d=document.createElement('div'); d.className='tf-q'; d.id='tfq'+i;
+    d.innerHTML=`<div class="tf-stmt">${i+1}. ${q.s}</div>
+      <div class="tf-row">
+        <button class="tf-btn t-btn" onclick="tfAnswer(${i},true)">✓ True</button>
+        <button class="tf-btn f-btn" onclick="tfAnswer(${i},false)">✗ False</button>
+      </div>
+      <div class="tf-exp" id="tfe${i}">${q.e}</div>`;
+    ct.appendChild(d);
+  });
+}
+function tfAnswer(i,v){
+  if(tfState[i]!==undefined) return; tfState[i]=v;
+  const q=TF[i], el=document.getElementById('tfq'+i);
+  el.querySelectorAll('.tf-btn').forEach(b=>b.disabled=true);
+  const tb=el.querySelector('.t-btn'), fb=el.querySelector('.f-btn');
+  if(v===true) tb.classList.add(q.a===true?'c-ok':'c-err');
+  else fb.classList.add(q.a===false?'c-ok':'c-err');
+  if(v!==q.a){ if(q.a===true) tb.classList.add('c-ok'); else fb.classList.add('c-ok'); }
+  document.getElementById('tfe'+i).classList.add('show');
+  const done=Object.keys(tfState).length, ok=Object.entries(tfState).filter(([k,ans])=>ans===TF[k].a).length;
+  document.getElementById('tf-score').textContent = done===TF.length ? `${ok} / ${TF.length} correct${ok===TF.length?' 🎉':''}` : `${done} of ${TF.length} answered`;
+}
+function tfReset(){ tfState={}; document.getElementById('tf-score').textContent=''; buildTF(); }
+buildTF();
+
+// ── 5. HOTSPOT ───────────────────────────────────────
+const HS=[
+  {title:"Information Desk", txt:"The heart of the community library. Here the community librarian welcomes everyone, answers questions, and connects patrons to what they need — whether that's a book, a local service, or a listening ear. It sets the tone for an inclusive, welcoming space."},
+  {title:"The Collection", txt:"A community library's collection must reflect the diversity of the community — multilingual materials, large-print books, resources for adults learning to read, and content on topics relevant to local needs. The community librarian curates and advocates for this collection."},
+  {title:"Digital Station", txt:"Bridging the digital divide is a core responsibility. The community librarian helps patrons access the internet, fill in forms online, and develop basic digital skills — opening up opportunities that would otherwise be out of reach."},
+  {title:"Children's Corner", txt:"Early literacy starts here. The community librarian organises storytelling sessions, reading challenges, and activities that make the library a place children want to visit — and where all families feel genuinely welcome."},
+  {title:"Notice Board", txt:"More than paper on a wall — the notice board connects the library to the wider community. The community librarian curates information about local services, events, support groups, and opportunities, turning the library into a real community hub."},
+  {title:"Reading Area", txt:"A safe, quiet, inclusive space for everyone. Community libraries provide somewhere to read, think, and rest — especially important for people without a safe or quiet place at home. The community librarian ensures this space feels truly welcoming to all."},
+];
+function showHS(i){
+  document.getElementById('hs-info').innerHTML=`<div class="hs-info-title">📍 ${HS[i].title}</div>${HS[i].txt}`;
+}
+
+// ── 6. REFLECTION JOURNAL ────────────────────────────
+function jCount(){
+  const t=document.getElementById('j-ta').value.trim();
+  const n=t?t.split(/\s+/).length:0;
+  document.getElementById('j-wc').textContent=n+' word'+(n!==1?'s':'');
+}
+function jCopy(){
+  const t=document.getElementById('j-ta').value;
+  if(!t){ document.getElementById('j-fb').textContent='Nothing to copy yet!'; return; }
+  navigator.clipboard.writeText(t).then(()=>{ document.getElementById('j-fb').textContent='✓ Copied!'; setTimeout(()=>document.getElementById('j-fb').textContent='',2000); });
+}
+function jClear(){ document.getElementById('j-ta').value=''; jCount(); document.getElementById('j-fb').textContent=''; }
+
+// ── 7. CHECKLIST ─────────────────────────────────────
+const CL=[
+  "I can describe the role of a community librarian in my own words.",
+  "I understand how a community librarian differs from a traditional librarian.",
+  "I know what an inclusive collection means and why it matters.",
+  "I can identify at least three types of community members who would benefit from library services.",
+  "I understand the concept of information literacy and how to support it.",
+  "I know how to signpost a patron to an appropriate community service.",
+  "I feel confident welcoming someone who has never used a library before.",
+  "I can explain how a community library contributes to reducing social exclusion.",
+];
+let clDone=new Set();
+function clBuild(){
+  const ul=document.getElementById('cl-list'); ul.innerHTML='';
+  CL.forEach((txt,i)=>{
+    const li=document.createElement('li'); li.className='cl-item'+(clDone.has(i)?' checked':'');
+    li.innerHTML=`<div class="cl-box">${clDone.has(i)?'✓':''}</div><div class="cl-txt">${txt}</div>`;
+    li.onclick=()=>{ clDone.has(i)?clDone.delete(i):clDone.add(i); clBuild(); };
+    ul.appendChild(li);
+  });
+  const pct=Math.round(clDone.size/CL.length*100);
+  document.getElementById('pb-fill').style.width=pct+'%';
+  document.getElementById('pb-lbl').textContent=`${clDone.size} of ${CL.length} completed`;
+}
+function clReset(){ clDone.clear(); clBuild(); }
+clBuild();
+
+// ── 8. SEQUENCING ────────────────────────────────────
+const SEQ=[
+  {id:1, txt:"Identify community needs and interests through conversations or surveys."},
+  {id:2, txt:"Define the goals and target audience for the programme."},
+  {id:3, txt:"Select relevant books, resources, or activities."},
+  {id:4, txt:"Set a date, time, and venue that works for your community."},
+  {id:5, txt:"Promote the programme through the notice board, local networks, and word of mouth."},
+  {id:6, txt:"Host the programme and create a welcoming environment."},
+  {id:7, txt:"Gather feedback from participants afterwards."},
+  {id:8, txt:"Reflect and adapt the programme based on what you learned."},
+];
+let seqOrder=[], seqDrag=null;
+function seqShuffle(){ seqOrder=[...SEQ].sort(()=>Math.random()-.5); seqBuild(); }
+function seqBuild(){
+  const l=document.getElementById('seq-list'); l.innerHTML='';
+  seqOrder.forEach((s,i)=>{
+    const el=document.createElement('div'); el.className='seq-item'; el.draggable=true; el.dataset.i=i;
+    el.innerHTML=`<span class="seq-handle">⠿</span><div class="seq-num">${i+1}</div><div>${s.txt}</div>`;
+    el.addEventListener('dragstart',()=>{ seqDrag=i; setTimeout(()=>el.classList.add('dragging'),0); });
+    el.addEventListener('dragend',()=>{ el.classList.remove('dragging'); l.querySelectorAll('.seq-item').forEach(x=>x.classList.remove('over-top','over-bot')); });
+    el.addEventListener('dragover',e=>{
+      e.preventDefault();
+      const mid=el.getBoundingClientRect().top+el.getBoundingClientRect().height/2;
+      el.classList.remove('over-top','over-bot');
+      el.classList.add(e.clientY<mid?'over-top':'over-bot');
+    });
+    el.addEventListener('dragleave',()=>el.classList.remove('over-top','over-bot'));
+    el.addEventListener('drop',e=>{
+      e.preventDefault();
+      const ti=parseInt(el.dataset.i);
+      const mid=el.getBoundingClientRect().top+el.getBoundingClientRect().height/2;
+      const after=e.clientY>=mid;
+      const dragged=seqOrder.splice(seqDrag,1)[0];
+      let ins=after?ti:ti;
+      if(seqDrag<ti) ins=after?ti:ti-1; else ins=after?ti+1:ti;
+      seqOrder.splice(Math.max(0,Math.min(ins,seqOrder.length)),0,dragged);
+      seqBuild(); document.getElementById('seq-fb').textContent='';
+    });
+    l.appendChild(el);
+  });
+}
+function seqCheck(){
+  const items=document.querySelectorAll('.seq-item'); let ok=0;
+  seqOrder.forEach((s,i)=>{
+    items[i].classList.remove('s-ok','s-err');
+    if(s.id===i+1){ items[i].classList.add('s-ok'); ok++; } else items[i].classList.add('s-err');
+  });
+  document.getElementById('seq-fb').textContent=ok===SEQ.length?'🎉 Perfect order!':`${ok} of ${SEQ.length} steps in the right place — keep adjusting!`;
+}
+function seqReset(){ document.getElementById('seq-fb').textContent=''; seqShuffle(); }
+seqShuffle();
+
+// ── 9. SELF-ASSESSMENT SLIDERS ───────────────────────
+const SL=[
+  "Welcoming community members from diverse backgrounds",
+  "Helping someone find the information they need",
+  "Recommending books or resources on a range of topics",
+  "Connecting patrons to community services and support",
+  "Organising a simple library programme or event",
+  "Handling a difficult or sensitive patron situation",
+  "Explaining what a community library does to someone new",
+  "Identifying collection gaps and advocating for change",
+];
+function slBuild(){
+  const l=document.getElementById('sl-list'); l.innerHTML='';
+  SL.forEach((sk,i)=>{
+    const d=document.createElement('div'); d.className='sl-item';
+    d.innerHTML=`<div class="sl-lbl">${sk}</div>
+      <div class="sl-track">
+        <span style="font-size:.75rem;color:var(--muted)">1</span>
+        <input class="sl-range" type="range" min="1" max="5" value="3" id="slr${i}" oninput="document.getElementById('slv${i}').textContent=this.value">
+        <span style="font-size:.75rem;color:var(--muted)">5</span>
+        <div class="sl-val" id="slv${i}">3</div>
+      </div>
+      <div class="sl-lbls"><span>Not yet confident</span><span>Very confident</span></div>`;
+    l.appendChild(d);
+  });
+  document.getElementById('sl-result').classList.remove('show');
+}
+function slResult(){
+  const rows=document.getElementById('sl-r-rows'); rows.innerHTML='';
+  SL.forEach((sk,i)=>{
+    const v=parseInt(document.getElementById('slr'+i).value);
+    const row=document.createElement('div'); row.className='sl-r-row';
+    row.innerHTML=`<div class="sl-r-lbl">${sk}</div><div class="sl-r-bw"><div class="sl-r-bf" style="width:${v*20}%"></div></div><div class="sl-r-n">${v}</div>`;
+    rows.appendChild(row);
+  });
+  document.getElementById('sl-result').classList.add('show');
+  document.getElementById('sl-result').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function slReset(){ slBuild(); }
+slBuild();
+
+// ── 10. MEMORY MATCH ─────────────────────────────────
+const MEM=[
+  {id:1,tp:'term',txt:"Information Literacy"},
+  {id:1,tp:'def', txt:"Finding, evaluating, and using information effectively"},
+  {id:2,tp:'term',txt:"Community Outreach"},
+  {id:2,tp:'def', txt:"Engaging community members beyond the library walls"},
+  {id:3,tp:'term',txt:"Inclusive Collection"},
+  {id:3,tp:'def', txt:"A collection reflecting the diversity of the community"},
+  {id:4,tp:'term',txt:"Safe Space"},
+  {id:4,tp:'def', txt:"Where everyone feels welcomed and respected"},
+  {id:5,tp:'term',txt:"Digital Divide"},
+  {id:5,tp:'def', txt:"The gap between those with and without technology access"},
+  {id:6,tp:'term',txt:"Signposting"},
+  {id:6,tp:'def', txt:"Connecting people to the right services outside the library"},
+];
+let mFlipped=[], mMatched=new Set(), mAtt=0, mLock=false, mDeck=[];
+function memBuild(){
+  mFlipped=[]; mMatched.clear(); mAtt=0; mLock=false;
+  mDeck=[...MEM].sort(()=>Math.random()-.5).map((c,i)=>({...c,i}));
+  document.getElementById('mem-att').textContent=0;
+  document.getElementById('mem-match').textContent=0;
+  document.getElementById('mem-fb').textContent='';
+  const g=document.getElementById('mem-grid'); g.innerHTML='';
+  mDeck.forEach((c,i)=>{
+    const el=document.createElement('div'); el.className='mem-card'; el.dataset.i=i;
+    const ico=c.tp==='term'?'📖':'💡';
+    el.innerHTML=`<div class="mem-inner"><div class="mem-f">${ico}</div><div class="mem-b">${c.txt}</div></div>`;
+    el.onclick=()=>memFlip(i);
+    g.appendChild(el);
+  });
+}
+function memFlip(i){
+  if(mLock) return;
+  const cards=document.querySelectorAll('.mem-card')
